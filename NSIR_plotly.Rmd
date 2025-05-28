@@ -1,0 +1,456 @@
+---
+title: 'Next Steps in R: Interactive plotting with plotly'
+author: "Maalavika Pillai"
+geometry: margin=1in
+output: html_document
+always_allow_html: yes
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+### Pre-requisites
+
+For this workshop, participants should be familiar with R at the level of the R Fundamentals Bootcamp, another introductory R workshop, or be a self-taught R coder.
+
+
+### Welcome
+In this workshop, you will learn how to generate interactive plots that can host multi-dimensional data using `plotly`. We will be using the `iris` dataset, that contains information on petal and sepal dimensions for flowers from 3 different iris species. 
+
+
+### Installation
+First,we will install and load all required packages. 
+
+```{r packages}
+
+#Install required packages
+
+if (!require(ggplot2)) install.packages(ggplot2)
+if (!require(plotly)) install.packages("plotly")
+if (!require(MASS)) install.packages("MASS")
+
+#Load packages
+library(datasets)
+library(ggplot2)
+library(plotly)
+library(MASS)
+```
+
+
+### Loading the iris dataset
+We will start by loading the `iris` data and summarize the data to understand the different variables and structure it has.
+
+```{r load-data}
+#Load data 
+data(iris)
+
+summary(iris)
+```
+
+The iris dataset has 5 columns: sepal length, sepal width, petal length, petal width and the species of the iris flower.
+
+### Creating 2D visualizations
+Next, we will create a basic 2D static visualization using ggplot2. We will generate a scatter plot to gauge the relationship between 2 variables - petal length and sepal length.
+
+```{r 2d-vis}
+#Plot sepal length v/s petal length 
+gg_fig <- ggplot(iris) + 
+  geom_point(aes(x = Petal.Length, y= Sepal.Length))
+
+gg_fig
+```
+
+
+------------------------------------------------------------
+
+#### Exercise 1
+
+Create a 2D scatter plot comparing petal length and sepal length with points colored based on iris species.
+```{r ex1, include=FALSE}
+
+#Plot sepal length v/s petal length with each point colored based on Species
+#species_fig <- 
+  
+  
+```
+
+------------------------------------------------------------
+
+### Creating an interactive plot using `plotly`
+`plotly` is an R package used to create interactive visualizations. It can be used to make existing ggplot2 objects interactive or to create plots from scratch. Interactive plotting allows you to zoom, hover, filter, and click on plot elements without needing to re-plot the figure. 
+
+We will start by creating an interactive visualization of the existing figure,`gg_fig`, for sepal length v/s petal length. This can be done easily using the `ggplotly` function
+
+```{r}
+ggplotly(gg_fig)
+```
+
+
+Alternatively, the `plot_ly()` function can be used to create the interactive plot directly from data. 
+The `type` argument is used to specify what type of chart (`scatter` , `box` or `bar`). Similar to the concept of layers in ggplot, in `plotly` each visual element is called a trace. For instance, multiple groups of data (such as petal and sepal length for different iris species) can be represented as multiple traces. We can manually add traces to an existing plot using `add_trace()` function. Unlike ggplot, the data variables need to be passed as formulas by using `~` before the variable name.
+
+We will now generate a figure, where we will add the versicolor species of iris flowers as a trace to the figure. 
+
+```{r manual-trace}
+##Adding traces manually
+
+#Initialize the plot
+fig <- plot_ly()
+
+#Subset data for versicolor species  and add the data as a trace
+df_subset <- subset(iris, Species == 'versicolor')
+fig <- fig %>%
+  add_trace(data = df_subset,
+              x = ~Petal.Length,
+              y = ~Sepal.Length,
+              type = 'scatter',
+              mode = 'markers',
+              name = 'versicolor')
+  
+fig
+
+```
+
+Next, we will add the other two species as new traces to the figure. 
+
+```{r}
+#Subset data for setosa species  and add the data as a trace
+df_subset <- subset(iris, Species == 'setosa')
+fig <- fig %>%
+  add_trace(data = df_subset,
+              x = ~Petal.Length,
+              y = ~Sepal.Length,
+              type = 'scatter',
+              mode = 'markers',
+              name = 'setosa')
+#Visualize
+fig
+
+#Subset data for virginica species  and add the data as a trace
+
+df_subset <- subset(iris, Species == 'virginica')
+fig <- fig %>%
+  add_trace(data = df_subset,
+              x = ~Petal.Length,
+              y = ~Sepal.Length,
+              type = 'scatter',
+              mode = 'markers',
+              name = 'virginica')
+  
+fig
+```
+
+
+
+
+------------------------------------------------------------
+ 
+#### Exercise 2
+Create a boxplot using `plot_ly()` to measure the sepal length distribution for each species, with each species manually added as a new trace.
+
+```{r ex2, include=FALSE}
+
+```
+
+
+------------------------------------------------------------
+
+
+For scatter plots, the `mode` argument specifies how data points should appear in the scatter plot. Options include `"markers"` (points), `"line"` and `"text"`. Combinations of multiple modes can be used by adding a "+" between them. For instance `"markers+line"` will represent observations as points with lines . 
+
+To our existing figure `fig`, we will add a trace where each point has a text label telling us the petal width for that observation. 
+
+```{r scatter-text}
+fig %>%
+    add_trace(data = iris,
+              x = ~Petal.Length,
+              y = ~Sepal.Length,
+              type = 'scatter',
+              mode='text',
+              text = ~Petal.Width)
+
+```
+Alternatively, we can display text on hover to have a cleaner plot. In this case, we simply specify the label to the `text` argument while plotting the scatter plot. Additionally, the `plot_ly()` function can also be used by itself (without adding new traces) to generate figures. Here is an example where we are not adding a new trace containing the text, but rather including it in the original plotting function itself.
+
+```{r text-hover}
+fig <- plot_ly(data = iris,
+               x = ~Petal.Length,
+               y = ~Sepal.Length,
+              text = ~paste("Petal Width: ", Petal.Width, '<br>Sepal Width:', Sepal.Width),
+               type = 'scatter',
+               mode = 'markers',
+               color = ~Species)
+fig
+
+```
+
+The `layout` function allows us to control the appearance of the plot. This function can be used to change the appearance and location of the title, axes, legend and other elements in the plot.
+
+
+```{r layout}
+fig <- fig %>% layout(title = "Iris: Petal Length v/s Sepal Length",
+                      xaxis = list(title = "Petal Length (cm)"),
+                      yaxis = list(title = "Sepal Length (cm)"))
+fig
+```
+
+
+------------------------------------------------------------
+ 
+#### Exercise 3
+Change the layout of the boxplot generated in Exercise 2 to add a title and relabel the x and y-axes.
+
+```{r ex3, include=FALSE}
+
+```
+
+
+------------------------------------------------------------
+
+### Creating 3D plots using plotly
+To create a 3D plot with an additional variable, we set the the `type` argument in the `plot_ly()` function to `"scatter3d"`. Additionally we specify the third variable as the z-axis for the plot. Below is an example of a 3D plot with the petal length, petal width and sepal length along the 3 axes. 
+
+
+```{r 3d-scatter}
+plot_ly(data = iris,
+        x = ~Petal.Length,
+        y = ~Sepal.Length,
+        z= ~Petal.Width,
+        type = 'scatter3d',
+        mode = 'markers',
+        color = ~Species) %>% layout(scene = list(
+                              xaxis = list(title = "Petal Length (cm)"),
+                              yaxis = list(title = "Sepal Length (cm)"),
+                              zaxis = list(title = "Petal Width (cm)")))
+```
+
+
+Such 3D plots can also be used to create surface plots where the z-axis represents the density of points. Here, we use the `kde2d()` function from `MASS` to get the joint 2D density of points based on the petal length and sepal length. We set the `type` to `"surface"` to generate a surface plot.
+
+```{r 3d-surface} 
+
+#Extract 2D density  numeric matrix
+density <- kde2d(iris$Petal.Length, iris$Sepal.Length, n = 100)
+
+surf_3d <- plot_ly(x=~density$x,
+        y=~density$y,
+        z=~density$z, 
+        type='surface') 
+
+surf_3d  <- surf_3d %>% layout(title = "Iris: Petal Length v/s Sepal Length density",
+                     scene = list(
+                              xaxis = list(title = "Petal Length (cm)"),
+                              yaxis = list(title = "Sepal Length (cm)"),
+                              zaxis = list(title = "Density")
+                            ))
+surf_3d
+```
+
+### Adding sliders to interactive plots
+
+One of the major advantages of using interactive plotting is the ability to animate plots. Sliders allow the user to selectively view or filter data in the plot. A slider or animation can have multiple frames, with each frame representing a different filter for the data. Each frame can represent a set of active traces that can be visualized in the plot. By changing which frame is being visualized using the slider, the viewer can decide which set of traces are actively being visualized. When the frame is shifted on the slider, traces associated with the previous frame are hidden and those for the current frame are visualized. 
+
+Now, we will generate a figure with a slider that allows the viewer to filter the data based on species. First, we create the `steps` variable that represents which set of traces are visible in each frame. `steps` is a list of lists where the first list represents each frame and the lists within it contain information about active traces in that frame.
+```{r}
+#Initialize the list of steps, this list has a length equal to the number of frames
+steps <- list()
+
+#Only the first trace (out of three traces) is visible when the frame is set to setosa
+steps[[1]] <- list(args= list('visible', c(TRUE,FALSE,FALSE)),
+            method='restyle',
+            label='setosa')
+
+#Only the second traceis visible when the frame is set to versicolor
+steps[[2]] <- list(args= list('visible', c(FALSE,TRUE,FALSE)),
+            method='restyle',
+            label='versicolor')
+
+
+#Only the third trace is visible when the frame is set to virginica
+steps[[3]] <- list(args= list('visible', c(FALSE,FALSE,TRUE)),
+            method='restyle',
+            label='virginica')
+
+```
+
+
+Next, we add the three traces corresponding to the setosa, versicolor and virginica species.
+
+
+```{r}
+#Initialize plot
+fig <- plot_ly()
+
+#Set the active trace for when the plot is first plotted. This represents the initial frame for the plot.
+#Here, we are setting the first species as active. 
+active_trace = c(TRUE,FALSE,FALSE)
+
+#We add data for each species as a trace
+for (sp in unique(iris$Species)) {
+  
+  #Get index of the species
+  idx  <- which( unique(iris$Species) == sp)
+  
+  #Subset species specific data
+  df_subset <- subset(iris, Species == sp)
+  
+  #Add data for each species as a new trace
+  fig <- fig %>%
+    add_trace(data = df_subset,
+              x = ~Petal.Length,
+              y = ~Sepal.Length,
+              type = 'scatter',
+              mode = 'markers',
+              name = sp,
+              visible = active_trace[idx], #This makes sure that in the initial plot only the species for the first frame is visible.
+              showlegend = FALSE)
+}
+
+```
+
+
+he appearance of the slider is customized using `layout`. 
+```{r}
+
+#Slider is added to the plot using the layout function
+fig <- fig %>%layout(sliders = list(list(active = 0, #Specifies which frame is active when first plotted (where is the slider positioned)
+                             currentvalue = list(prefix = "Species: "), #Label for the slider
+                             steps = steps)),#The list of active traces for each frame
+                     yaxis=list(range=c(4,8)), #Set y axis limits
+                     xaxis=list(range=c(1,7))) #Set x axis limits
+
+fig  
+```
+
+
+------------------------------------------------------------
+ 
+#### Exercise 4
+Create a slider that plots petal width v/s sepal width for samples with petal length above and below the median within their species.
+
+```{r ex4, include=FALSE}
+
+```
+
+
+------------------------------------------------------------
+
+
+ 
+### Solutions
+#### Exercise 1
+Create a 2D scatter plot comparing petal length and sepal length with each point colored based on the iris species it belongs to
+```{r}
+
+#Plot sepal length v/s petal length with each point colored based on Species
+p <- ggplot(iris) + 
+  geom_point(aes(x = Petal.Length, y= Sepal.Length, color= Species))
+p
+
+
+```
+
+#### Exercise 2 
+Create a boxplot using plotly measuring the sepal length distribution for each species, with each species added as a new trace.
+```{r}
+##Adding traces manually
+
+#Initialize the plot
+fig <- plot_ly()
+
+#Use a for loop to subset data for each species  and add the data as a trace
+for (sp in unique(iris$Species)) {
+  df_subset <- subset(iris, Species == sp)
+  
+  fig <- fig %>%
+    add_trace(data = df_subset,
+              y = ~Sepal.Length,
+              type = 'box',
+              name = sp)
+  
+}
+
+fig
+
+```
+
+------------------------------------------------------------
+ 
+#### Exercise 3
+Change the layout of the boxplot generated in Exercise 2 to add a title and relabel the x and y-axes.
+
+```{r}
+fig <- fig %>% layout(title = "Iris: Sepal Lengths across species ",
+                      xaxis = list(title = "Species"),
+                      yaxis = list(title = "Sepal Length (cm)"))
+fig
+  
+```
+
+
+------------------------------------------------------------
+
+#### Exercise 4
+Create a slider that plots petal width v/s sepal width for samples with petal length above and below the median within their species.
+```{r}
+
+#Classify samples as having petal length above or below the median within their species
+iris_classified <- iris %>% 
+  group_by(Species) %>%  #Group by each species
+  mutate(petal_length_class = Petal.Length > median(Petal.Length)) #Add a column specifying if petal length is greater than median or not
+
+
+#Initialize the list of steps, this list has a length equal to the number of frames
+steps <- list()
+
+#Set the active trace for when the plot is first plotted. This represents the initial frame for the plot.
+#Here, we are setting the first group as active. 
+active_trace = c(TRUE,FALSE)
+labels <- c('Above Median','Below Median')
+
+
+#Initialize plot with the first frame (above median)
+fig <- plot_ly(data = iris_classified[iris_classified$petal_length_class,],
+              x = ~Petal.Width,
+              y = ~Sepal.Width,
+              color= ~Species,
+              type = 'scatter',
+              mode = 'markers',
+              visible = TRUE,
+              showlegend = FALSE)
+
+#Adding the second frame (below median)
+fig <- fig %>%
+    add_trace(data = iris_classified[!iris_classified$petal_length_class,],
+              x = ~Petal.Width,
+              y = ~Sepal.Width,
+              color= ~Species,
+              type = 'scatter',
+              mode = 'markers',
+              visible = FALSE,
+              showlegend = FALSE)
+
+#Creating the slider frames
+step <- 
+steps<-list(list(args= list('visible', active_trace),method='restyle',label=labels[1]),
+            list(args= list('visible', c(FALSE,TRUE)),method='restyle',label=labels[2]))
+  
+  
+#Slider is added to the plot using the layout function
+fig <- fig %>%layout(sliders = list(list(active = 0, #Specifies which frame is active when first plotted (where is the slider positioned)
+                             currentvalue = list(prefix = "Value: "), #Label for the slider
+                             steps = steps)),
+                     yaxis=list(range=c(2,4.5)), 
+                     xaxis=list(range=c(0,3))
+                     ) 
+
+fig  
+
+
+```
+
+ 
