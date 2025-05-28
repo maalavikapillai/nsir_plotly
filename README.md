@@ -1,7 +1,7 @@
 # Workshop on creating interactive plots with plotly
 Taught by Maalavika Pillai, Spring Quarter 2025 -- Research Computing and Data Services (RCDS), Northwestern University
 
-##Concepts
+## Concepts
 * Introduction to plotly
 * Generating interactive 2D scatter plots
 * Adding data labels and hover text
