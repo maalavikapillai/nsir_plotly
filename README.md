@@ -1,4 +1,4 @@
-# Workshop on creating interactive plots with plotly
+# Next Steps in R: Interactive Plotting with Plotly
 Taught by Maalavika Pillai, Spring Quarter 2025 -- Research Computing and Data Services (RCDS), Northwestern University
 
 ## Concepts
