@@ -7,8 +7,6 @@ always_allow_html: yes
 ---
 
 
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
@@ -59,7 +57,7 @@ Next, we will create a basic 2D static visualization using ggplot2. We will gene
 ```{r 2d-vis}
 #Plot sepal length v/s petal length 
 gg_fig <- ggplot(iris) + 
-  geom_point(aes(x = Petal.Length, y= Sepal.Length))
+  geom_point(aes(x = Petal.Length, y = Sepal.Length))
 
 gg_fig
 ```
@@ -170,7 +168,7 @@ fig %>%
               x = ~Petal.Length,
               y = ~Sepal.Length,
               type = 'scatter',
-              mode='text',
+              mode ='text',
               text = ~Petal.Width)
 
 ```
@@ -180,7 +178,7 @@ Alternatively, we can display text on hover to have a cleaner plot. In this case
 fig <- plot_ly(data = iris,
                x = ~Petal.Length,
                y = ~Sepal.Length,
-              text = ~paste("Petal Width: ", Petal.Width, '<br>Sepal Width:', Sepal.Width),
+               text = ~paste("Petal Width: ", Petal.Width, '<br>Sepal Width:', Sepal.Width),
                type = 'scatter',
                mode = 'markers',
                color = ~Species)
@@ -192,9 +190,10 @@ The `layout` function allows us to control the appearance of the plot. This func
 
 
 ```{r layout}
-fig <- fig %>% layout(title = "Iris: Petal Length v/s Sepal Length",
-                      xaxis = list(title = "Petal Length (cm)"),
-                      yaxis = list(title = "Sepal Length (cm)"))
+fig <- fig %>% 
+  layout(title = "Iris: Petal Length v/s Sepal Length",
+         xaxis = list(title = "Petal Length (cm)"), 
+         yaxis = list(title = "Sepal Length (cm)"))
 fig
 ```
 
@@ -205,7 +204,12 @@ fig
 Change the layout of the boxplot generated in Exercise 2 to add a title and relabel the x and y-axes.
 
 ```{r ex3, include=FALSE}
-
+fig <- plot_ly(data = iris,
+              x= ~Species,
+              y = ~Sepal.Length,
+              type = 'box',
+              color = ~Species)
+  
 ```
 
 
@@ -216,16 +220,17 @@ To create a 3D plot with an additional variable, we set the the `type` argument 
 
 
 ```{r 3d-scatter}
-plot_ly(data = iris,
-        x = ~Petal.Length,
-        y = ~Sepal.Length,
-        z= ~Petal.Width,
-        type = 'scatter3d',
-        mode = 'markers',
-        color = ~Species) %>% layout(scene = list(
-                              xaxis = list(title = "Petal Length (cm)"),
-                              yaxis = list(title = "Sepal Length (cm)"),
-                              zaxis = list(title = "Petal Width (cm)")))
+fig_3d <- plot_ly(data = iris,
+                   x = ~Petal.Length,
+                   y = ~Sepal.Length,
+                   z = ~Petal.Width,
+                   type = 'scatter3d',
+                   mode = 'markers',
+                   color = ~Species) 
+fig_3d  <- fig_3d %>% 
+  layout(scene = list(xaxis = list(title = "Petal Length (cm)"),
+                      yaxis = list(title = "Sepal Length (cm)"),
+                      zaxis = list(title = "Petal Width (cm)")))
 ```
 
 
@@ -236,19 +241,20 @@ Such 3D plots can also be used to create surface plots where the z-axis represen
 #Extract 2D density  numeric matrix
 density <- kde2d(iris$Petal.Length, iris$Sepal.Length, n = 100)
 
-surf_3d <- plot_ly(x=~density$x,
-        y=~density$y,
-        z=~density$z, 
-        type='surface') 
+surf_3d <- plot_ly(x = ~density$x,
+                   y = ~density$y,
+                   z = ~density$z, 
+                   type = 'surface') 
 
-surf_3d  <- surf_3d %>% layout(title = "Iris: Petal Length v/s Sepal Length density",
-                     scene = list(
-                              xaxis = list(title = "Petal Length (cm)"),
-                              yaxis = list(title = "Sepal Length (cm)"),
-                              zaxis = list(title = "Density")
-                            ))
+surf_3d  <- surf_3d %>% 
+  layout(title = "Iris: Petal Length v/s Sepal Length density",
+         scene = list(xaxis = list(title = "Petal Length (cm)"),
+                      yaxis = list(title = "Sepal Length (cm)"),
+                      zaxis = list(title = "Density")))
 surf_3d
 ```
+
+
 
 ### Adding sliders to interactive plots
 
@@ -260,20 +266,23 @@ Now, we will generate a figure with a slider that allows the viewer to filter th
 steps <- list()
 
 #Only the first trace (out of three traces) is visible when the frame is set to setosa
-steps[[1]] <- list(args= list('visible', c(TRUE,FALSE,FALSE)),
-            method='restyle',
-            label='setosa')
+steps[[1]] <- list(args = list('visible', 
+                               c(TRUE,FALSE,FALSE)),
+                   method = 'restyle',
+                   label = 'setosa')
 
-#Only the second traceis visible when the frame is set to versicolor
-steps[[2]] <- list(args= list('visible', c(FALSE,TRUE,FALSE)),
-            method='restyle',
-            label='versicolor')
+#Only the second trace is visible when the frame is set to versicolor
+steps[[2]] <- list(args = list('visible', 
+                               c(FALSE,TRUE,FALSE)),
+                   method ='restyle',
+                   label = 'versicolor')
 
 
 #Only the third trace is visible when the frame is set to virginica
-steps[[3]] <- list(args= list('visible', c(FALSE,FALSE,TRUE)),
-            method='restyle',
-            label='virginica')
+steps[[3]] <- list(args = list('visible', 
+                               c(FALSE,FALSE,TRUE)),
+                   method = 'restyle',
+                   label = 'virginica')
 
 ```
 
@@ -287,13 +296,13 @@ fig <- plot_ly()
 
 #Set the active trace for when the plot is first plotted. This represents the initial frame for the plot.
 #Here, we are setting the first species as active. 
-active_trace = c(TRUE,FALSE,FALSE)
+active_trace <- c(TRUE,FALSE,FALSE)
 
 #We add data for each species as a trace
 for (sp in unique(iris$Species)) {
   
   #Get index of the species
-  idx  <- which( unique(iris$Species) == sp)
+  idx  <- which(unique(iris$Species) == sp)
   
   #Subset species specific data
   df_subset <- subset(iris, Species == sp)
@@ -313,15 +322,16 @@ for (sp in unique(iris$Species)) {
 ```
 
 
-he appearance of the slider is customized using `layout`. 
+The appearance of the slider is customized using `layout`. 
 ```{r}
 
 #Slider is added to the plot using the layout function
-fig <- fig %>%layout(sliders = list(list(active = 0, #Specifies which frame is active when first plotted (where is the slider positioned)
+fig <- fig %>%
+  layout(sliders = list(list(active = 0, #Specifies which frame is active when first plotted (where is the slider positioned)
                              currentvalue = list(prefix = "Species: "), #Label for the slider
                              steps = steps)),#The list of active traces for each frame
-                     yaxis=list(range=c(4,8)), #Set y axis limits
-                     xaxis=list(range=c(1,7))) #Set x axis limits
+         yaxis=list(range=c(4,8)), #Set y axis limits
+         xaxis=list(range=c(1,7))) #Set x axis limits
 
 fig  
 ```
@@ -333,6 +343,11 @@ fig
 Create a slider that plots petal width v/s sepal width for samples with petal length above and below the median within their species.
 
 ```{r ex4, include=FALSE}
+#Classify samples as having petal length above or below the median within their species
+iris_classified <- iris %>% 
+  group_by(Species) %>%  #Group by each species
+  mutate(petal_length_class = Petal.Length > median(Petal.Length)) #Add a column specifying if petal length is greater than median or not
+
 
 ```
 
@@ -435,7 +450,6 @@ fig <- fig %>%
               showlegend = FALSE)
 
 #Creating the slider frames
-step <- 
 steps<-list(list(args= list('visible', active_trace),method='restyle',label=labels[1]),
             list(args= list('visible', c(FALSE,TRUE)),method='restyle',label=labels[2]))
   
